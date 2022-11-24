@@ -5,7 +5,8 @@
 # - an event (optional. Some topics don't have event type) - Exemples are avaibled below
 # - an dict of filters (optional)
 # - an array of actions (mandatory)
-#
+
+
 # FILTERS:
 # Each filter is composed with a "field" and a "value". When the script is looking for an automation rule, if 
 # filters are defined, the script is validating the field is present in the webhook event, and its value is 
@@ -15,6 +16,13 @@
 # filters:
 #   mac: 001122334455
 #
+# It is also possible to configure a list of possible values for a specific field
+# E.g:
+# filters:
+#   mac: 
+#    - 001122334455
+#    - aabbccddeeff
+
 # ACTIONS
 # All the actions configured in the rule are processed by the script for each matching rule. For more information 
 # about the rules configuration, please check the README file.
@@ -49,7 +57,7 @@
 - name: audit logs
   topic: "audits"
   filters:
-    admin_name: mwta
+    admin_name: admin name admin@email
   actions: 
     - type: "slack"        
       incoming_webhook_url: "https://hooks.slack.com/services/xxxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxx"

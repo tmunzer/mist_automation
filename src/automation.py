@@ -23,7 +23,7 @@ console = Console("automation")
 def _find_var_names(src: str):
     regexp = r"\{[a-z_]+\}"
     return re.findall(regexp, src)
-        
+
 
 def _replace_var(action: dict, event: dict, entries: list):
     for entry in entries:
@@ -34,15 +34,18 @@ def _replace_var(action: dict, event: dict, entries: list):
             variables = _find_var_names(action_entry)
             for variable in variables:
                 if variable == "{event}":
-                    action_entry= action_entry.replace(variable, json.dumps(event))
+                    action_entry = action_entry.replace(
+                        variable, json.dumps(event))
                 else:
                     variable_name = variable.replace("{", "").replace("}", "")
                     variable_value = event.get(variable_name)
-                    action_entry= action_entry.replace(variable, variable_value)
+                    action_entry = action_entry.replace(
+                        variable, variable_value)
             action[entry] = action_entry
     return action
 
-def _process_auatomation(topic:str, event:dict, automation_name: str, actions:list):
+
+def _process_auatomation(topic: str, event: dict, automation_name: str, actions: list):
     """Process new event"""
     event_type = event.get("type", "New Event")
     for tmp_action in actions:
@@ -54,26 +57,30 @@ def _process_auatomation(topic:str, event:dict, automation_name: str, actions:li
         if action_type == "http_request":
             console.debug(event)
             action = _replace_var(action, event, ["url", "body"])
-            http_request.send_request(action.get("method"), action.get("url"), action.get("headers", {}), action.get("body"))
+            http_request.send_request(action.get("method"), action.get(
+                "url"), action.get("headers", {}), action.get("body"))
 
         elif action_type == "slack":
             console.debug(event)
             action = _replace_var(action, event, ["title", "body"])
-            incoming_webhook_url=action.get("incoming_webhook_url")
-            title=action.get("title", f"Incoming Webhook: {topic} - {event_type}")
+            incoming_webhook_url = action.get("incoming_webhook_url")
+            title = action.get(
+                "title", f"Incoming Webhook: {topic} - {event_type}")
             data = json.loads(action["body"])
             Slack.send_manual_message(incoming_webhook_url, title, data)
 
         elif action_type == "teams":
             console.debug(event)
             action = _replace_var(action, event, ["title", "body"])
-            incoming_webhook_url=action.get("incoming_webhook_url")
-            title=action.get("title", f"Incoming Webhook: {topic} - {event_type}")
+            incoming_webhook_url = action.get("incoming_webhook_url")
+            title = action.get(
+                "title", f"Incoming Webhook: {topic} - {event_type}")
             data = json.loads(action["body"])
             color = action.get("color")
             Teams.send_manual_message(incoming_webhook_url, title, data, color)
 
-def _process_event(topic:str, event:dict, automation_config:dict):
+
+def _process_event(topic: str, event: dict, automation_config: dict):
     topic_automations = automation_config.get(topic)
     if topic_automations:
         event_type = event.get("type")
@@ -85,14 +92,16 @@ def _process_event(topic:str, event:dict, automation_config:dict):
             process_automation = True
             filters = automations[automation_name].get("filters", [])
             actions = automations[automation_name].get("actions", [])
-            if filters:                
+            if filters:
                 for key in filters:
-                    value = filters[key] 
+                    value = filters[key]
                     if not event.get(key):
                         console.warning(f"Event does not have the field {key}")
                         process_automation = False
-                    elif  event.get(key) != value:
-                        console.warning(f"Event not matching filter {key} with value {value}")
+                    elif (type(value) == str and event.get(key) != value) \
+                            or (type(value) == list and not event.get(key) in value):
+                        console.warning(
+                            f"Event not matching filter {key} with value {value}")
                         process_automation = False
             if process_automation:
                 _process_auatomation(topic, event, automation_name, actions)
