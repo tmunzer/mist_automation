@@ -108,7 +108,7 @@ def display_automation():
 ###########################
 # ENTRY POINT
 print(" Configuration ".center(80, "_"))
-WEBHOOK_SECRET = load_conf("secret")
+WEBHOOK_SECRET = load_conf("webhook_secret")
 WEBHOOK_URI = load_conf("webhook_uri")
 print(" Automation ".center(80, "_"))
 AUTOMATION = load_automation()
