@@ -85,13 +85,14 @@ def _process_event(topic:str, event:dict, automation_config:dict):
             process_automation = True
             filters = automations[automation_name].get("filters", [])
             actions = automations[automation_name].get("actions", [])
-            if filters:
-                for filter in filters:
-                    if not event.get(filter["field"]):
-                        console.warning(f"Event does not have the field {filter['field']}")
+            if filters:                
+                for key in filters:
+                    value = filters[key] 
+                    if not event.get(key):
+                        console.warning(f"Event does not have the field {key}")
                         process_automation = False
-                    elif  event.get(filter["field"]) != filter["value"]:
-                        console.warning(f"Event not matching filter {filter['field']} with value {filter['value']}")
+                    elif  event.get(key) != value:
+                        console.warning(f"Event not matching filter {key} with value {value}")
                         process_automation = False
             if process_automation:
                 _process_auatomation(topic, event, automation_name, actions)

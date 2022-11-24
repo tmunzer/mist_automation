@@ -3,18 +3,17 @@
 # - a name (mandatory)
 # - a topic (mandatory) - Exemples are avaibled below
 # - an event (optional. Some topics don't have event type) - Exemples are avaibled below
-# - an array of filters (optional)
+# - an dict of filters (optional)
 # - an array of actions (mandatory)
 #
 # FILTERS:
 # Each filter is composed with a "field" and a "value". When the script is looking for an automation rule, if 
 # filters are defined, the script is validating the field is present in the webhook event, and its value is 
 # matching the filter value.
-# All the filters must match to process the automation rule.
+# The event must match all the filters to process the automation rule.
 # E.g.:
 # filters:
-#   - field: mac
-#   - value: 001122334455
+#   mac: 001122334455
 #
 # ACTIONS
 # All the actions configured in the rule are processed by the script for each matching rule. For more information 
@@ -24,6 +23,8 @@
 - name: switch_mgmt_vlan  
   topic: "device-events"
   event: "SW_ASSIGNED"
+  filters:
+    org_id: xxxxxx-xxxx-xxxx-xxxx-xxxxxxxx
   actions: 
     - type: "http_request"
       method: "PUT"
@@ -48,8 +49,7 @@
 - name: audit logs
   topic: "audits"
   filters:
-    - field: admin_name
-      value: mwta
+    admin_name: mwta
   actions: 
     - type: "slack"        
       incoming_webhook_url: "https://hooks.slack.com/services/xxxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxx"
