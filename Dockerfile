@@ -6,10 +6,11 @@ LABEL one.stag.mist_automation.release-date="2022-05-20"
 
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir flask requests
-RUN pip install -r requirements.txt
 
 COPY ./src /app/
 WORKDIR /app
+
+RUN pip install -r requirements.txt
 
 EXPOSE 51361
 CMD ["python","-u","/app/main.py"]
