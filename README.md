@@ -31,14 +31,20 @@ This will tell Mist Cloud to send events (like AP Connected/Disconnected) to the
         "enabled": true
     }
 ```
+# features:
+* Receive Webhooks from Mist (with or without Webhook Secret)
+* Filter the webhook event based on the topic, the event type, or any field present in the event body
+* Execute an automated action:
+  * send a HTTP Request, with configurable headers and body (E.g. to automate configuration changes in Mist)
+  * send the event top Slack or Teams
 
 
 # How to use it
 ## Docker Image
-You can easily deploy this application as a [Docker](https://www.docker.com/) image. The image is publicly available on Docker Hub at https://hub.docker.com/r/tmunzer/mwta/.
+You can easily deploy this application as a [Docker](https://www.docker.com/) image. The image is publicly available on Docker Hub at https://hub.docker.com/r/tmunzer/mist_automation/.
 In this case, you can choose to manually deploy the image and create the container, or you can use the automation script (for Linux).
 
-If you want to manually deploy the Docker image, the Mwtt container will listen for HTTP messages on port `TCP51361`
+If you want to manually deploy the Docker image, the Mist Automation container will listen for HTTP messages on port `TCP51361`
 
 
 When you are starting the script for the first time, it will ask some question:
@@ -53,22 +59,9 @@ You can find a docker-compose.yaml file in the root folder of the repository. Th
 Please note, in this case, you will have to manually generate all the required configuration files!
 
 ## Configuration
-### MWTT Configuration
-Before starting the MWTT application, you will have to configure it. To do so, edit the file `config.py` located in the folder permananent_folder/mwtt created by the deployment script.
+Before starting the Mist Automation application, you will have to configure it. To do so, edit the file `config.py`.
 
-The file `config.py` already contains the configuration structure with example values. 
+The file `config_example.py` contains the configuration structure with example values. 
 
-If you want to manually create this file, you can check the `src/config_example.py` file to see the required variables.
-
-## Usage
-### Start/Stop the MWTT Application
-This can be done through the deployment script, or directly by using Docker commands. If you do it manually, you will have to start/stop both containers, `jwilder/nginx-proxy` and `tmunzer/mwtt`.
-### Docker Tips
-Depending on your system and your settings, you may have to add `sudo` in front of the following commands
-- `docker ps`: list all you docker containers currently running. This command will also show you the container id.
-- `docker ps -a`: list all you docker containers. This command will also show you the container id.
-- `docker start <container_id>`: manually start a docker container.
-- `docker stop <container_id>`: manually stop a docker container.
-- `docker logs <container_id>`: show the container logs
-- `docker logs -f <container_id>`: continuously show the container logs
+You need to configure your Mist Organization to send Webhooks to this application.
 
