@@ -31,7 +31,7 @@ This will tell Mist Cloud to send events (like AP Connected/Disconnected) to the
         "enabled": true
     }
 ```
-# features:
+# Features:
 * Receive Webhooks from Mist (with or without Webhook Secret)
 * Filter the webhook event based on the topic, the event type, or any field present in the event body
 * Execute an automated action:
