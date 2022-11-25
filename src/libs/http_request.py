@@ -1,7 +1,6 @@
 import requests
 from requests.exceptions import HTTPError
 from libs.logger import Console
-import json
 
 console = Console("http_request")
 

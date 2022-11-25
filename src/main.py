@@ -4,10 +4,13 @@ import sys
 import yaml
 import json
 from datetime import datetime
+import traceback
 
 from flask import Flask
 from flask import request
 from config import webhook_conf
+
+from automation import webhooks
 ###########################
 # APP SETTINGS
 DEBUG = False
@@ -29,7 +32,6 @@ finally:
     os.environ["LOG_LEVEL"] = LOG_LEVEL
     if not DEBUG:
         os.environ['FLASK_ENV'] = 'PRODUCTION'
-    import automation
     from libs.logger import Console
     console = Console("main")
 
@@ -59,32 +61,75 @@ def display_conf():
 ###########################
 # LAOD AUTOMATION
 
-def process_automation_config(automation_config: list):
-    AUTOMATION = {}
-    for automation in automation_config:
-        name = automation.get("name")
-        topic = automation.get("topic")
-        event = automation.get("event")
-        actions = automation.get("actions")
-        filters = automation.get("filters")
+def _process_automation_webhook(automation_rules: dict, rule_config:dict):
+        automation_name = rule_config.get("name")
+        automation_topic = rule_config.get("topic")
+        automation_event = rule_config.get("event")
+        automation_actions = rule_config.get("actions")
+        automation_conditions = rule_config.get("conditions")
 
-        if not topic in AUTOMATION:
-            AUTOMATION[topic] = {}
+        if not automation_name: 
+            console.error("rule Name missing in the automation configuration")
+            return automation_rules
+        if not automation_topic: 
+            console.error(f"\"topic\" field is missing in the automation configuration in rule {automation_name}")
+            return automation_rules
+        if not automation_actions: 
+            console.error(f"\"actions\" field is missing in the automation configuration in rule {automation_name}")
+            return automation_rules
 
-        if event:
-            if not event in AUTOMATION:
-                AUTOMATION[topic][event] = {}
-            AUTOMATION[topic][event][name] = {
-                "actions": actions,
-                "filters": filters
+        if automation_topic and not automation_topic in automation_rules["webhook"]:
+            automation_rules["webhook"][automation_topic] = {}
+
+        if automation_event:
+            if not automation_event in automation_rules["webhook"]:
+                automation_rules["webhook"][automation_topic][automation_event] = {}
+            automation_rules["webhook"][automation_topic][automation_event][automation_name] = {
+                "actions": automation_actions,
+                "conditions": automation_conditions
             }
         else:
-            AUTOMATION[topic][name] = {
-                "actions": actions,
-                "filters": filters
+            automation_rules["webhook"][automation_topic][automation_name] = {
+                "actions": automation_actions,
+                "conditions": automation_conditions
             }
+        return automation_rules
 
-    return AUTOMATION
+def _process_automation_datetime(automation_rules: dict, rule_config: dict):
+        automation_name = rule_config.get("name")
+        automation_at = rule_config.get("at")
+        automation_when = rule_config.get("when")
+        automation_actions = rule_config.get("actions")
+
+        if not automation_name: 
+            console.error("rule Name missing in the automation configuration")
+            return automation_rules
+        if not automation_at and not automation_when: 
+            console.error(f"\"at\" or \"when\" fields are missing in the automation configuration in rule {automation_name}")
+            return automation_rules
+        if not automation_actions: 
+            console.error(f"\"actions\" field is missing in the automation configuration in rule {automation_name}")
+            return automation_rules
+
+        automation_rules["datetime"][automation_name] = {
+            "actions": automation_actions
+        }
+        if automation_when: 
+
+
+def _process_automation_config(automation_config: list):
+    automation_rules = {}
+    for rule in automation_config:
+        automation_type = rule.get("type")
+
+        if not automation_type in automation_rules:
+            automation_rules[automation_type] = {}
+        
+        if automation_type == "webhook":
+            _process_automation_webhook(automation_rules, rule)
+
+
+    return automation_rules
 
 
 def load_automation():
@@ -92,10 +137,11 @@ def load_automation():
     try:
         with open("automation.yml", "r") as f:
             automation_config = yaml.load(f, Loader=yaml.FullLoader)
-            AUTOMATION = process_automation_config(automation_config)
+            AUTOMATION = _process_automation_config(automation_config)
         print("\033[92m\u2714\033[0m")
-    except:
-        print('\033[31m\u2716\033[0m')
+    except Exception:        
+        print('\033[31m\u2716\033[0m')    
+        traceback.print_exc()
         sys.exit(255)
     return AUTOMATION
 
@@ -123,7 +169,7 @@ app = Flask(__name__)
 def postJsonHandler():
     console.info(" New message reveived ".center(60, "-"))
     start = datetime.now()
-    res = automation.new_event(
+    res = webhooks.new_event(
         request,
         WEBHOOK_SECRET,
         AUTOMATION

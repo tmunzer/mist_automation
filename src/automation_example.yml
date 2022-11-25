@@ -1,38 +1,96 @@
 # This file is used to configure the automation rules.
 # Each automation rule must have
-# - a name (mandatory)
-# - a topic (mandatory) - Exemples are avaibled below
-# - an event (optional. Some topics don't have event type) - Exemples are avaibled below
-# - an dict of filters (optional)
-# - an array of actions (mandatory)
+# - a name 
+# - a trigger type and the corresponding parameters
+# - a topic 
+# - an event 
+# - a dict of conditions 
+# - an array of actions
 
-
-# FILTERS:
-# Each filter is composed with a "field" and a "value". When the script is looking for an automation rule, if 
-# filters are defined, the script is validating the field is present in the webhook event, and its value is 
-# matching the filter value.
-# The event must match all the filters to process the automation rule.
-# E.g.:
-# filters:
-#   mac: 001122334455
+# TRIGGERS
+# Triggers are configuring the event triggering the automation. They can currently be webhook based or time based
 #
-# It is also possible to configure a list of possible values for a specific field
-# E.g:
-# filters:
-#   mac: 
-#    - 001122334455
-#    - aabbccddeeff
+# TRIGGERS EXAMPLE
+#
+# - name: switch_mgmt_vlan  
+#   trigger: webhook
+#   topic: "device-events"        mandatory - Exemples are avaibled below
+#   event: "SW_ASSIGNED"          optional  - Exemples are avaibled below
+#
+# - name: time_trigger
+#   trigger: time
+#   at: "08:00"
+#   timestamp: 1669317522
+
+# CONDITIONS (optional)
+# Conditions can be used inside a rule to prevent its execution if all the conditions are not met.
+# Different types of conditions are available (see README.md for more details), but each of them must
+# have a "type", which will define the required parameters. 
+# For example, to only execute the rule based on fields of the webhook event:
+#
+# CONDITION EXAMPLE
+#
+# conditions:
+# - type: numeric                 event.rssi must be between -75 (included) and -45 (included)
+#   filed: event.rssi
+#   above: -75                    optional if below is set
+#   below: -45                    optional if above is set
+# - type: partial_match           event.device_mac must contain 5c5b35
+#   field: event.device_mac
+#   value: 5c5b35
+# - type: exact_match             event.device_mac must be 5c5b35001122
+#   field: event.device_mac
+#   value: 5c5b35001122
+# - type: multiple_matches        event.device_name must be one of AP-Building-A-01 and AP-Building-A-03
+#   field: event.device_name
+#   value:
+#   - AP-Building-A-01
+#   - AP-Building-A-03
+# - type: time                    current time must be between 08:00 UTC-1 and 18:00 UTC +1, and week day monday or friday
+#   before: "08:00"               optional
+#   before_offset: "-01:00:00"    optional
+#   after: "18:00"                optional
+#   after_offset: "-01:00:00"     optional
+#   weekday:                      optional
+#     - mon
+#     - fri
 
 # ACTIONS
 # All the actions configured in the rule are processed by the script for each matching rule. For more information 
 # about the rules configuration, please check the README file.
 # The action may contain variables. The variable values must be present in the received webhook event.
+#
+# ACTIONS EXAMPLE
+#
+# actions: 
+#   - type: "http_request"      
+#     method: "PUT"
+#     url: "https://api.mist.com/api/v1/sites/{event.site_id}/devices/00000000-0000-0000-1000-{event.mac}"
+#     headers: 
+#       Authorization: "Token xxxxxxxxxxxxxxxxMIST_APITOKENxxxxxxxxxxxxxxxx"
+#       Content-Type: Application/JSON
+#     body: 
+#       name: "{event.mac}"
+#       ip_config: 
+#         network: "infra"
+#   - type: "slack"        
+#     incoming_webhook_url: "https://hooks.slack.com/services/xxxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxx"
+#     title: "{event.site_id}: SW_ASSIGNED"
+#     body: "{event}"
+#   - type: "teams"        
+#     incoming_webhook_url: "https://junipernetworks.webhook.office.com/webhookb2/xxxxxx-xxxx-xxxx-xxxx-xxxxxxxx@xxxxxx-xxxx-xxxx-xxxx-xxxxxxxx/IncomingWebhook/xxxxxxxxxxxxxxxxxxxxxxxx/xxxxxx-xxxx-xxxx-xxxx-xxxxxxxx"
+#     title: "{event.site_id}: SW_ASSIGNED"
+#     body: "{event}"
+#     color: "#2196f3"
+
+
 
 - name: switch_mgmt_vlan  
   topic: "device-events"
   event: "SW_ASSIGNED"
-  filters:
-    org_id: xxxxxx-xxxx-xxxx-xxxx-xxxxxxxx
+  conditions:
+    - type: event_feild
+      org_id: xxxxxx-xxxx-xxxx-xxxx-xxxxxxxx
   actions: 
     - type: "http_request"
       method: "PUT"
@@ -56,8 +114,9 @@
 
 - name: audit logs
   topic: "audits"
-  filters:
-    admin_name: admin name admin@email
+  conditions:
+    - type: event_field
+      admin_name: admin name admin@email
   actions: 
     - type: "slack"        
       incoming_webhook_url: "https://hooks.slack.com/services/xxxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxx"
