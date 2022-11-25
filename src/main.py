@@ -10,7 +10,7 @@ from flask import Flask
 from flask import request
 from config import webhook_conf
 
-from automation import webhooks
+from automation import trigger_webhooks
 ###########################
 # APP SETTINGS
 DEBUG = False
@@ -169,7 +169,7 @@ app = Flask(__name__)
 def postJsonHandler():
     console.info(" New message reveived ".center(60, "-"))
     start = datetime.now()
-    res = webhooks.new_event(
+    res = trigger_webhooks.new_event(
         request,
         WEBHOOK_SECRET,
         AUTOMATION
