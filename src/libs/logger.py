@@ -5,7 +5,6 @@ import os
 
 class Console():
 
-
     def __init__(self, process_name):
         self.process_name = process_name
         log_level = os.environ.get("LOG_LEVEL", "INFO")
@@ -17,16 +16,16 @@ class Console():
         return now.strftime("%d/%m/%Y %H:%M:%S")
 
     def critical(self, message):
-        logging.critical(f"{self.process_name} | {message}")
+        logging.critical(f"{self.process_name}".ljust(10) + f" | {message}")
 
     def error(self, message):
-        logging.error( f"{self.process_name} | {message}")
+        logging.error(f"{self.process_name}".ljust(10) + f" | {message}")
 
     def warning(self, message):
-        logging.warning(f"{self.process_name} | {message}")
+        logging.warning(f"{self.process_name}".ljust(10) + f" | {message}")
 
     def info(self, message):
-        logging.info( f"{self.process_name} | {message}")
+        logging.info(f"{self.process_name}".ljust(10) + f" | {message}")
 
     def debug(self, message):
-        logging.debug( f"{self.process_name} | {message}")
+        logging.debug(f"{self.process_name}".ljust(10) + f" | {message}")

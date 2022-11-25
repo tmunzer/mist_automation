@@ -48,7 +48,6 @@ def send_manual_message(incoming_webhook, title, data, color=None):
         body["themeColor"] = color
 
     data = json.dumps(body)
-    print(data)
     console.info("Sending message to TEAMS")
     try:
         resp = requests.post(incoming_webhook, headers={

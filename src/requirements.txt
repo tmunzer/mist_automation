@@ -1,4 +1,6 @@
 flask>=1.1
+waitress
 requests
 pyyaml
 crontab
+pytz

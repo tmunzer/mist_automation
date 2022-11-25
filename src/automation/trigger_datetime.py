@@ -1,15 +1,14 @@
-from libs.logger import Console
 import sys
 import os
 from crontab import CronTab
-
 from automation import process_auatomation
+from libs.logger import Console
+console = Console("datetime")
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(SCRIPT_DIR)
 
 """System modules"""
-console = Console("datetime")
 
 #######################################
 #  FUNCTIONS

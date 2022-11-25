@@ -2,7 +2,7 @@ import requests
 from requests.exceptions import HTTPError
 from libs.logger import Console
 
-console = Console("http_request")
+console = Console("http req")
 
 def send_request(method: str, url: str, headers: dict, body:str):
     console.info("Sending HTTP request")

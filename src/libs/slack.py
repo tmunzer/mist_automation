@@ -19,8 +19,6 @@ def send_manual_message(incoming_webhook, title, data):
         actions [obj]       Array of actions {text: btn text, action: btn url, tag: btn id}
         channel str         Slack Channel
     '''
-    print(data)
-    print(type(data))
     mrkdown = json2mrkdwn.convert(data)
 
     body = {
@@ -42,7 +40,6 @@ def send_manual_message(incoming_webhook, title, data):
     }
 
     data = json.dumps(body)
-    print(data)
     console.info("Sending message to SLACK")
     try:
         resp = requests.post(incoming_webhook, headers={

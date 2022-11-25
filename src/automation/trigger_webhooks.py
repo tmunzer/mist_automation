@@ -1,12 +1,9 @@
-from libs.logger import Console
-import sys
-import os
 import hmac
 import hashlib
-from automation import process_automation
-
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(SCRIPT_DIR)
+from automation import conditions as Conditions
+from automation import automation as Automation
+from automation.rules_memory import Memory
+from libs.logger import Console
 
 """System modules"""
 console = Console("webhook")
@@ -15,34 +12,25 @@ console = Console("webhook")
 #  FUNCTIONS
 
 
-def _process_event(topic: str, event: dict, automation_config: dict):
-    topic_automations = automation_config.get(topic)
-    if topic_automations:
-        event_type = event.get("type")
-        if event_type:
-            automations = topic_automations.get(event_type, [])
-        else:
-            automations = topic_automations
-        for automation_name in automations:
-            process_automation = True
-            conditions = automations[automation_name].get("conditions", [])
-            actions = automations[automation_name].get("actions", [])
-            if conditions:
-                for key in conditions:
-                    value = conditions[key]
-                    if not event.get(key):
-                        console.warning(f"Event does not have the field {key}")
-                        process_automation = False
-                    elif (type(value) == str and event.get(key) != value) \
-                            or (type(value) == list and not event.get(key) in value):
-                        console.warning(
-                            f"Event not matching condition {key} with value {value}")
-                        process_automation = False
-            if process_automation:
-                process_automation(topic, event, automation_name, actions)
+def _process_event(mist_topic: str, mist_event: dict, automation_rules: Memory):
+    event_type = mist_event.get("type")
+    rules = automation_rules.get_webhook_rules(mist_topic, event_type)
+    for rule in rules:
+
+        process_automation = True
+        rule_name = rule.get("name", "No Name")
+        rule_conditions = rule.get("conditions", [])
+        rule_actions = rule.get("actions", [])
+
+        if rule_conditions:
+            process_automation = False
+            process_automation = Conditions.process(
+                rule_name, mist_event, rule_conditions)
+        if process_automation:
+            Automation.process(mist_topic, mist_event, rule_name, rule_actions)
 
 
-def new_event(req, webhook_secret, automation_config):
+def new_event(req, webhook_secret, automation_rules: Memory):
     '''
     Start to process new webhook message
     request         flask request
@@ -75,6 +63,6 @@ def new_event(req, webhook_secret, automation_config):
         _process_event(
             topic,
             event,
-            automation_config
+            automation_rules
         )
     return '', 200

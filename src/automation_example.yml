@@ -1,11 +1,12 @@
 # This file is used to configure the automation rules.
 # Each automation rule must have
-# - a name 
-# - a trigger type and the corresponding parameters
-# - a topic 
-# - an event 
-# - a dict of conditions 
-# - an array of actions
+# - name 
+# - trigger                       define the type of trigger (webhook based, time based, ...)
+# - topic / event                 if webhook based
+# - at                            if time based
+# - timezone                      if time based. optional. Using UTC if not provided
+# - conditions                    list of conditions to match to trigger the action
+# - actions                       list of actions to execute 
 
 # TRIGGERS
 # Triggers are configuring the event triggering the automation. They can currently be webhook based or time based
@@ -32,7 +33,7 @@
 #
 # conditions:
 # - type: numeric                 event.rssi must be between -75 (included) and -45 (included)
-#   filed: event.rssi
+#   field: event.rssi
 #   above: -75                    optional if below is set
 #   below: -45                    optional if above is set
 # - type: partial_match           event.device_mac must contain 5c5b35
@@ -46,11 +47,10 @@
 #   value:
 #   - AP-Building-A-01
 #   - AP-Building-A-03
-# - type: time                    current time must be between 08:00 UTC-1 and 18:00 UTC +1, and week day monday or friday
-#   before: "08:00"               optional
-#   before_offset: "-01:00:00"    optional
-#   after: "18:00"                optional
-#   after_offset: "-01:00:00"     optional
+# - type: time                    current time must be between 08:00 CET and 18:00 CET, and week day monday or friday
+#   after: "08:00"                optional
+#   before: "18:00"               optional
+#   timezone: Europe/Paris        optional. If not defined, using UTC
 #   weekday:                      optional
 #     - mon
 #     - fri
@@ -89,8 +89,9 @@
   topic: "device-events"
   event: "SW_ASSIGNED"
   conditions:
-    - type: event_feild
-      org_id: xxxxxx-xxxx-xxxx-xxxx-xxxxxxxx
+    - type: exact_match
+      field: event.org_id
+      value: xxxxxx-xxxx-xxxx-xxxx-xxxxxxxx
   actions: 
     - type: "http_request"
       method: "PUT"
@@ -115,8 +116,9 @@
 - name: audit logs
   topic: "audits"
   conditions:
-    - type: event_field
-      admin_name: admin name admin@email
+    - type: partial_match
+      field: event.admin_name
+      value: admin@email
   actions: 
     - type: "slack"        
       incoming_webhook_url: "https://hooks.slack.com/services/xxxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxx"

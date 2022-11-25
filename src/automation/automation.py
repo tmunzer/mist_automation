@@ -42,7 +42,7 @@ def _replace_var(action: dict, event: dict, entries: list):
     return action
 
 
-def process_automation(topic: str, event: dict, automation_name: str, actions: list):
+def process(topic: str, event: dict, automation_name: str, actions: list):
     """Process new event"""
     event_type = event.get("type", "New Event")
     for tmp_action in actions:
