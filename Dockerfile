@@ -1,4 +1,4 @@
-FROM python:3.12.0b3-slim
+FROM python:3.12.0rc2-slim-bullseye
 
 LABEL maintainer="tmunzer@juniper.net"
 LABEL one.stag.mist_automation.version="2.0.0"
